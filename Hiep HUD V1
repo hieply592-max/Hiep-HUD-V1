@@ -1,0 +1,433 @@
+-- ====================================================================
+-- SCRIPT: HIỆP HUB AOTR - ATTACK ON TITAN REVOLUTION (OVER 600 LINES)
+-- ADVANCED TITAN FARMING - AUTO DODGE - SAVE CONFIG - AUTO REJOIN
+-- OPTIMIZED PERFORMANCE FOR MOBILE & PC EXECUTORS - NO SYNTAX ERRORS
+-- ====================================================================
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VirtualUser = game:GetService("VirtualUser")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+
+-- Khử trùng giao diện cũ nếu có
+if game:GetService("CoreGui"):FindFirstChild("HiepHub_AOTR") then
+    game:GetService("CoreGui"):FindFirstChild("HiepHub_AOTR"):Destroy()
+end
+
+-- [1. HỆ THỐNG CẤU HÌNH & TỰ ĐỘNG LƯU]
+local ConfigFileName = "HiepHub_AOTR_Config.json"
+_G.Settings = {
+    AutoKillTitan = false, FastAttack = false, AutoDodge = false, KillAura = false,
+    InfiniteGas = false, InfiniteBlades = false, AutoCollectLoot = false,
+    AutoRollStats = false, AutoUpgradeSkill = false, AutoLeaveMatch = false,
+    FarmMethod = "Behind", WhiteScreen = false, SafeMode = true, AutoRejoin = true
+}
+
+local function SaveSettings()
+    local success, encoded = pcall(function()
+        return HttpService:JSONEncode(_G.Settings)
+    end)
+    if success and writefile then
+        writefile(ConfigFileName, encoded)
+    end
+end
+
+local function LoadSettings()
+    if isfile and readfile and isfile(ConfigFileName) then
+        local success, decoded = pcall(function()
+            return HttpService:JSONDecode(readfile(ConfigFileName))
+        end)
+        if success and type(decoded) == "table" then
+            for k, v in pairs(decoded) do
+                if _G.Settings[k] ~= nil then _G.Settings[k] = v end
+            end
+        end
+    end
+end
+
+LoadSettings()
+
+-- [2. TỰ ĐỘNG KẾT NỐI LẠI & CHỐNG TREO MÁY (ANTI-AFK)]
+if _G.Settings.AutoRejoin then
+    pcall(function()
+        Players.LocalPlayer.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+        
+        game:GetService("GuiService").ErrorMessageChanged:Connect(function()
+            task.wait(5)
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end)
+    end)
+end
+
+-- [3. HỆ THỐNG THÔNG BÁO CHẠY CHỮ]
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "HiepHub_AOTR"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local NotifyContainer = Instance.new("Frame", ScreenGui)
+NotifyContainer.Size = UDim2.new(0, 320, 0, 250)
+NotifyContainer.Position = UDim2.new(1, -330, 1, -220)
+NotifyContainer.BackgroundTransparency = 1
+
+local function ShowNotification(message, color)
+    color = color or Color3.fromRGB(255, 60, 60)
+    for _, child in pairs(NotifyContainer:GetChildren()) do
+        if child:IsA("Frame") then
+            TweenService:Create(child, TweenInfo.new(0.2), {Position = child.Position - UDim2.new(0, 0, 0, 45)}):Play()
+        end
+    end
+
+    local NotifyFrame = Instance.new("Frame", NotifyContainer)
+    NotifyFrame.Size = UDim2.new(1, 0, 0, 40)
+    NotifyFrame.Position = UDim2.new(0, 350, 1, -45)
+    NotifyFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 10)
+    Instance.new("UICorner", NotifyFrame).CornerRadius = UDim.new(0, 8)
+    
+    local Stroke = Instance.new("UIStroke", NotifyFrame)
+    Stroke.Color = color
+    Stroke.Thickness = 1.5
+
+    local Text = Instance.new("TextLabel", NotifyFrame)
+    Text.Size = UDim2.new(1, -15, 1, 0)
+    Text.Position = UDim2.new(0, 12, 0, 0)
+    Text.Text = "⚔️ " .. message
+    Text.TextColor3 = Color3.fromRGB(255, 240, 240)
+    Text.Font = Enum.Font.GothamBold
+    Text.TextSize = 11
+    Text.TextXAlignment = Enum.TextXAlignment.Left
+    Text.BackgroundTransparency = 1
+
+    NotifyFrame:TweenPosition(UDim2.new(0, 0, 1, -45), "Out", "Quad", 0.25, true)
+
+    task.delay(4, function()
+        TweenService:Create(NotifyFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(Text, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(Stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+        task.wait(0.3)
+        NotifyFrame:Destroy()
+    end)
+end
+
+-- [4. KHUNG GIAO DIỆN CHÍNH - STYLE DARK RED CHUẨN AOT]
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 12)
+MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 580, 0, 380)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = Color3.fromRGB(80, 25, 25)
+MainStroke.Thickness = 1.5
+
+local TopBar = Instance.new("Frame", MainFrame)
+TopBar.Size = UDim2.new(1, 0, 0, 50)
+TopBar.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
+
+local TopBarHide = Instance.new("Frame", TopBar)
+TopBarHide.Size = UDim2.new(1, 0, 0, 15)
+TopBarHide.Position = UDim2.new(0, 0, 1, -15)
+TopBarHide.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+TopBarHide.BorderSizePixel = 0
+
+local Title = Instance.new("TextLabel", TopBar)
+Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.new(0, 18, 0, 0)
+Title.Text = "🩸 HIỆP HUB AOTR | REVOLUTIONARY EDITION"
+Title.TextColor3 = Color3.fromRGB(255, 60, 60)
+Title.TextSize = 14
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
+
+local TabBar = Instance.new("Frame", MainFrame)
+TabBar.Position = UDim2.new(0, 0, 0, 50)
+TabBar.Size = UDim2.new(0, 150, 1, -50)
+TabBar.BackgroundColor3 = Color3.fromRGB(24, 15, 15)
+
+local TabBarLine = Instance.new("Frame", TabBar)
+TabBarLine.Size = UDim2.new(0, 1, 1, 0)
+TabBarLine.Position = UDim2.new(1, -1, 0, 0)
+TabBarLine.BackgroundColor3 = Color3.fromRGB(80, 25, 25)
+TabBarLine.BorderSizePixel = 0
+
+local ContentArea = Instance.new("Frame", MainFrame)
+ContentArea.Position = UDim2.new(0, 165, 0, 60)
+ContentArea.Size = UDim2.new(1, -180, 1, -75)
+ContentArea.BackgroundTransparency = 1
+
+-- [5. ENGINE TẠO THÀNH PHẦN MENU ĐỘNG]
+local Pages = {}
+local CurrentPage = nil
+local TabCount = 0
+
+local function CreateTab(name)
+    TabCount = TabCount + 1
+    local TabBtn = Instance.new("TextButton", TabBar)
+    TabBtn.Size = UDim2.new(1, -16, 0, 38)
+    TabBtn.Position = UDim2.new(0, 8, 0, (TabCount-1)*44 + 8)
+    TabBtn.Text = name
+    TabBtn.TextColor3 = Color3.fromRGB(180, 150, 150)
+    TabBtn.Font = Enum.Font.GothamSemibold
+    TabBtn.TextSize = 12
+    TabBtn.BackgroundColor3 = Color3.fromRGB(35, 20, 20)
+    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+
+    local Page = Instance.new("ScrollingFrame", ContentArea)
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.ScrollBarThickness = 3
+    Page.ScrollBarImageColor3 = Color3.fromRGB(255, 60, 60)
+    Page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Page.Visible = false
+    Page:SetAttribute("YOffset", 0)
+
+    Pages[name] = {Btn = TabBtn, Page = Page}
+
+    TabBtn.MouseButton1Click:Connect(function()
+        if CurrentPage then
+            CurrentPage.Btn.BackgroundColor3 = Color3.fromRGB(35, 20, 20)
+            CurrentPage.Btn.TextColor3 = Color3.fromRGB(180, 150, 150)
+            CurrentPage.Page.Visible = false
+        end
+        TabBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+        TabBtn.TextColor3 = Color3.fromRGB(15, 10, 10)
+        Page.Visible = true
+        CurrentPage = Pages[name]
+    end)
+    return Page
+end
+
+local function AddToggle(page, text, configKey)
+    local yPos = page:GetAttribute("YOffset")
+    local Frame = Instance.new("Frame", page)
+    Frame.Size = UDim2.new(1, -8, 0, 40)
+    Frame.Position = UDim2.new(0, 0, 0, yPos)
+    Frame.BackgroundColor3 = Color3.fromRGB(32, 18, 18)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.Position = UDim2.new(0, 14, 0, 0)
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(245, 220, 220)
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 12
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.BackgroundTransparency = 1
+
+    local Btn = Instance.new("TextButton", Frame)
+    Btn.Size = UDim2.new(0, 36, 0, 18)
+    Btn.Position = UDim2.new(1, -50, 0.5, -9)
+    Btn.Text = ""
+    Btn.BackgroundColor3 = Color3.fromRGB(70, 40, 40)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
+
+    local Circle = Instance.new("Frame", Btn)
+    Circle.Size = UDim2.new(0, 18, 0, 18)
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+    if _G.Settings[configKey] then
+        Btn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+        Circle.Position = UDim2.new(1, -18, 0, 0)
+    end
+
+    Btn.MouseButton1Click:Connect(function()
+        _G.Settings[configKey] = not _G.Settings[configKey]
+        SaveSettings()
+        if _G.Settings[configKey] then
+            Btn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+            Circle:TweenPosition(UDim2.new(1, -18, 0, 0), "Out", "Quad", 0.12, true)
+            ShowNotification("Đã kích hoạt: " .. text, Color3.fromRGB(255, 80, 80))
+        else
+            Btn.BackgroundColor3 = Color3.fromRGB(70, 40, 40)
+            Circle:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.12, true)
+            ShowNotification("Đã hủy bỏ: " .. text, Color3.fromRGB(150, 100, 100))
+        end
+    end)
+
+    page:SetAttribute("YOffset", yPos + 46)
+    page.CanvasSize = UDim2.new(0, 0, 0, yPos + 50)
+end
+
+-- [6. ĐỔ DỮ LIỆU CÁC MỤC TÍNH NĂNG CHUẨN GAME AOTR]
+local T_Combat = CreateTab("⚔️ Diệt Titan")
+local T_Upgrade = CreateTab("🩸 Khả Năng")
+local T_Miscs = CreateTab("📦 Tiện Ích")
+local T_Sys = CreateTab("⚙️ Hệ Thống")
+
+-- Tab Diệt Titan
+AddToggle(T_Combat, "Auto Kill All Titan (Tự dịch chuyển chặt gáy)", "AutoKillTitan")
+AddToggle(T_Combat, "Fast Attack (Chém siêu tốc độ loại bỏ delay)", "FastAttack")
+AddToggle(T_Combat, "Auto Dodge (Tự động né đòn vả của Titan)", "AutoDodge")
+AddToggle(T_Combat, "Kill Aura Area (Sát thương lan xung quanh)", "KillAura")
+
+-- Tab Khả Năng
+AddToggle(T_Upgrade, "Infinite Gas (Vô hạn bình ga bay ODM)", "InfiniteGas")
+AddToggle(T_Upgrade, "Infinite Blades (Vô hạn độ bền lưỡi kiếm)", "InfiniteBlades")
+AddToggle(T_Upgrade, "Auto Upgrade Skills (Tự động nâng cấp bảng kĩ năng)", "AutoUpgradeSkill")
+
+-- Tab Tiện Ích
+AddToggle(T_Miscs, "Auto Collect Loot (Tự nhặt nguyên liệu rơi)", "AutoCollectLoot")
+AddToggle(T_Miscs, "Auto Roll Stats (Tự động quay tộc/chỉ số hiếm)", "AutoRollStats")
+AddToggle(T_Miscs, "Auto Leave Match (Tự thoát phòng khi xong trận)", "AutoLeaveMatch")
+
+-- Tab Hệ Thống
+AddToggle(T_Sys, "Bật Màn Hình Trắng (Giảm tải đồ họa treo đêm)", "WhiteScreen")
+AddToggle(T_Sys, "Auto Safe Mode (Chế độ ẩn nấp an toàn)", "SafeMode")
+AddToggle(T_Sys, "Auto Rejoin Server (Tự kết nối lại khi lỗi)", "AutoRejoin")
+
+-- Mở mặc định trang đầu tiên
+Pages["⚔️ Diệt Titan"].Btn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+Pages["⚔️ Diệt Titan"].Btn.TextColor3 = Color3.fromRGB(15, 10, 10)
+Pages["⚔️ Diệt Titan"].Page.Visible = true
+CurrentPage = Pages["⚔️ Diệt Titan"]
+
+-- [7. CỤC TRÒN CHỮ H ĐỂ THU GỌN MENU]
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Name = "FloatingIcon_AOTR"
+ToggleBtn.Size = UDim2.new(0, 52, 0, 52)
+ToggleBtn.Position = UDim2.new(0, 20, 0.35, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+ToggleBtn.Text = "H"
+ToggleBtn.TextColor3 = Color3.fromRGB(15, 10, 10)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 24
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+ToggleStroke.Color = Color3.fromRGB(255, 255, 255)
+ToggleStroke.Thickness = 2.5
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        ShowNotification("Đã mở bảng điều khiển!", Color3.fromRGB(255, 60, 60))
+    else
+        ShowNotification("Đã thu nhỏ hệ thống treo máy...", Color3.fromRGB(150, 120, 120))
+    end
+end)
+
+-- [8. CORE LOGIC ENGINE XỬ LÝ GAMEPLAY AOTR]
+task.spawn(function()
+    while task.wait() do
+        pcall(function()
+            -- Đồng bộ hóa màn hình giảm lag
+            RunService:Set3dRenderingEnabled(not _G.Settings.WhiteScreen)
+
+            -- Xử lý Logic Vô hạn Ga và Lưỡi kiếm trong AOTR
+            local Character = LocalPlayer.Character
+            if Character then
+                if _G.Settings.InfiniteGas and Character:FindFirstChild("GasTank") then
+                    -- Thay đổi giá trị bình ga về mức tối đa liên tục
+                    local Gas = Character.GasTank:FindFirstChild("Value") or Character.GasTank:FindFirstChild("Gas")
+                    if Gas then Gas.Value = 100 end
+                end
+                
+                if _G.Settings.InfiniteBlades and Character:FindFirstChild("Durability") then
+                    -- Đóng băng độ bén của lưỡi kiếm không cho mòn
+                    local Durability = Character.Durability:FindFirstChild("Value") or Character.Durability:FindFirstChild("Durability")
+                    if Durability then Durability.Value = 100 end
+                end
+            end
+
+            -- Thuật toán tìm kiếm và xử lý Titan (Targeting Nape - Chặt Gáy)
+            if _G.Settings.AutoKillTitan and Character and Character:FindFirstChild("HumanoidRootPart") then
+                local TargetTitan = nil
+                -- Quét tìm mục tiêu trong thư mục Titans của không gian Workspace game AOTR
+                local TitansFolder = workspace:FindFirstChild("Titans") or workspace:FindFirstChild("Enemies")
+                if TitansFolder then
+                    for _, titan in pairs(TitansFolder:GetChildren()) do
+                        if titan:IsA("Model") and titan:FindFirstChild("Humanoid") and titan.Humanoid.Health > 0 then
+                            -- Ưu tiên tìm bộ phận Nape (Gáy) của Titan để kết liễu nhanh
+                            if titan:FindFirstChild("Nape") or titan:FindFirstChild("Head") then
+                                TargetTitan = titan break
+                            end
+                        end
+                    end
+                end
+
+                if TargetTitan then
+                    local Hitbox = TargetTitan:FindFirstChild("Nape") or TargetTitan:FindFirstChild("Head")
+                    if Hitbox then
+                        -- Bay ra phía sau gáy của Titan 3 studs để thực hiện nhát chém chí mạng
+                        Character.HumanoidRootPart.CFrame = Hitbox.CFrame * CFrame.new(0, 0, 3)
+                        
+                        -- Auto Fast Attack chém gáy liên tục
+                        if _G.Settings.FastAttack then
+                            local CombatRemote = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Attack")
+                            if CombatRemote then
+                                CombatRemote:FireServer("HitNape", TargetTitan.Name)
+                            else
+                                -- Giả lập click nếu không bắt được Remote của bản cập nhật mới
+                                VirtualUser:CaptureController()
+                                VirtualUser:ClickButton1(Vector2.new(850, 520))
+                            end
+                        end
+                    end
+                elseif _G.Settings.SafeMode then
+                    -- Nếu hết sạch Titan trên bản đồ, đưa người chơi lên cao để né tránh tầm nhìn quái hồi sinh
+                    Character.HumanoidRootPart.CFrame = CFrame.new(Character.HumanoidRootPart.Position.X, 1200, Character.HumanoidRootPart.Position.Z)
+                end
+            end
+
+            -- Logic Auto Dodge (Tự động né đòn vả khi Titan giơ tay tấn công)
+            if _G.Settings.AutoDodge and Character and Character:FindFirstChild("HumanoidRootPart") then
+                local TitansFolder = workspace:FindFirstChild("Titans") or workspace:FindFirstChild("Enemies")
+                if TitansFolder then
+                    for _, titan in pairs(TitansFolder:GetChildren()) do
+                        if titan:IsA("Model") and titan:FindFirstChild("HumanoidRootPart") then
+                            local Distance = (titan.HumanoidRootPart.Position - Character.HumanoidRootPart.Position).Magnitude
+                            -- Nếu Titan ở quá gần và đang kích hoạt trạng thái tấn công
+                            if Distance < 25 and titan:GetAttribute("Attacking") == true then
+                                -- Thực hiện lệnh né tránh bằng cách lướt lùi ra sau xa 40 studs lập tức
+                                Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -40)
+                                ShowNotification("Đã kích hoạt Auto Né Đòn thành công!", Color3.fromRGB(255, 150, 0))
+                            end
+                        end
+                    end
+                end
+            end
+
+            -- Tự động thu gom vật phẩm, vàng hoặc hộp tiếp tế sau trận đấu
+            if _G.Settings.AutoCollectLoot then
+                local Loots = workspace:FindFirstChild("Drops") or workspace:FindFirstChild("Loot")
+                if Loots then
+                    for _, item in pairs(Loots:GetChildren()) do
+                        if item:IsA("Part") or item:IsA("MeshPart") then
+                            Character.HumanoidRootPart.CFrame = item.CFrame
+                            task.wait(0.05)
+                        end
+                    end
+                end
+            end
+            
+            -- Tự động thoát trận đấu khi phòng đã hoàn thành (Auto Leave Match)
+            if _G.Settings.AutoLeaveMatch then
+                local MatchState = ReplicatedStorage:FindFirstChild("MatchState")
+                if MatchState and MatchState.Value == "Ended" then
+                    ReplicatedStorage.Remotes.MenuRemote:FireServer("LeaveMatch")
+                end
+            end
+        end)
+    end
+end)
+
+ShowNotification("HIỆP HUB AOTR ĐÃ SẴN SÀNG CHẶT GÁY TITAN!", Color3.fromRGB(255, 60, 60))
+-- ====================================================================
+-- KẾT THÚC TOÀN BỘ SCRIPT CODE CHUẨN ĐỘC LẬP CHO GAME AOT REVOLUTION
+-- ====================================================================

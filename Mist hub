@@ -1,0 +1,221 @@
+-- Script Roblox: Key System với tiền tố "hipvn", tự động loadstring AOTR khi key đúng
+-- Script này chạy trong môi trường Roblox Executor (Synapse X, Krnl, Script-Ware, v.v.)
+
+-- ============================================================
+-- PHẦN 1: CẤU HÌNH KEY VÀ URL SCRIPT
+-- ============================================================
+
+local TIEN_TO_KEY = "hipvn"
+local SCRIPT_URL = "https://raw.githubusercontent.com/xytuu/MistHub/refs/heads/main/aotr"
+
+-- ============================================================
+-- PHẦN 2: TẠO GUI NHẬP KEY
+-- ============================================================
+
+local function taoGuiNhapKey()
+    -- Tạo ScreenGui
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "KeySystem_HIPVN"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui") -- hoặc game.Players.LocalPlayer.PlayerGui
+
+    -- Frame chính
+    local frame = Instance.new("Frame")
+    frame.Name = "MainFrame"
+    frame.Size = UDim2.new(0, 350, 0, 200)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -100)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+
+    -- Corner bo tròn
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = frame
+
+    -- Tiêu đề
+    local tieuDe = Instance.new("TextLabel")
+    tieuDe.Name = "Title"
+    tieuDe.Size = UDim2.new(1, 0, 0, 40)
+    tieuDe.Position = UDim2.new(0, 0, 0, 10)
+    tieuDe.BackgroundTransparency = 1
+    tieuDe.Text = "NHẬP KEY ĐỂ CHẠY AOTR"
+    tieuDe.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tieuDe.TextSize = 16
+    tieuDe.Font = Enum.Font.SourceSansBold
+    tieuDe.Parent = frame
+
+    -- Hướng dẫn
+    local huongDan = Instance.new("TextLabel")
+    huongDan.Name = "Hint"
+    huongDan.Size = UDim2.new(1, -20, 0, 20)
+    huongDan.Position = UDim2.new(0, 10, 0, 55)
+    huongDan.BackgroundTransparency = 1
+    huongDan.Text = "Key bắt đầu bằng: " .. TIEN_TO_KEY
+    huongDan.TextColor3 = Color3.fromRGB(180, 180, 180)
+    huongDan.TextSize = 12
+    huongDan.Font = Enum.Font.SourceSans
+    huongDan.Parent = frame
+
+    -- Ô nhập key
+    local textBox = Instance.new("TextBox")
+    textBox.Name = "KeyInput"
+    textBox.Size = UDim2.new(1, -40, 0, 35)
+    textBox.Position = UDim2.new(0, 20, 0, 85)
+    textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBox.PlaceholderText = "Nhập key tại đây..."
+    textBox.TextSize = 14
+    textBox.Font = Enum.Font.SourceSans
+    textBox.ClearTextOnFocus = false
+    textBox.Parent = frame
+
+    local textCorner = Instance.new("UICorner")
+    textCorner.CornerRadius = UDim.new(0, 5)
+    textCorner.Parent = textBox
+
+    -- Nút xác nhận
+    local nutXacNhan = Instance.new("TextButton")
+    nutXacNhan.Name = "SubmitBtn"
+    nutXacNhan.Size = UDim2.new(0, 120, 0, 35)
+    nutXacNhan.Position = UDim2.new(0.5, -60, 0, 140)
+    nutXacNhan.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    nutXacNhan.Text = "XÁC NHẬN"
+    nutXacNhan.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nutXacNhan.TextSize = 14
+    nutXacNhan.Font = Enum.Font.SourceSansBold
+    nutXacNhan.Parent = frame
+
+    local nutCorner = Instance.new("UICorner")
+    nutCorner.CornerRadius = UDim.new(0, 5)
+    nutCorner.Parent = nutXacNhan
+
+    -- Thông báo trạng thái
+    local thongBao = Instance.new("TextLabel")
+    thongBao.Name = "Status"
+    thongBao.Size = UDim2.new(1, -20, 0, 20)
+    thongBao.Position = UDim2.new(0, 10, 0, 175)
+    thongBao.BackgroundTransparency = 1
+    thongBao.Text = ""
+    thongBao.TextColor3 = Color3.fromRGB(255, 100, 100)
+    thongBao.TextSize = 11
+    thongBao.Font = Enum.Font.SourceSans
+    thongBao.Parent = frame
+
+    return gui, textBox, nutXacNhan, thongBao
+end
+
+-- ============================================================
+-- PHẦN 3: HÀM KIỂM TRA KEY VÀ THỰC THI SCRIPT
+-- ============================================================
+
+local function kiemTraVaChay(keyNhap)
+    -- Chuẩn hóa key: bỏ khoảng trắng, viết hoa
+    keyNhap = keyNhap:gsub("%s+", ""):upper()
+
+    -- Kiểm tra tiền tố
+    if not keyNhap:find("^" .. TIEN_TO_KEY:upper()) then
+        return false, "Key phải bắt đầu bằng: " .. TIEN_TO_KEY
+    end
+
+    -- Kiểm tra độ dài tối thiểu (tránh key quá ngắn)
+    if #keyNhap < #TIEN_TO_KEY + 8 then
+        return false, "Key quá ngắn, không hợp lệ!"
+    end
+
+    -- Key hợp lệ
+    return true, nil
+end
+
+local function thucThiScriptAOTR()
+    -- Sử dụng loadstring để tải và chạy script từ URL
+    local thanhCong, ketQua = pcall(function()
+        local scriptTaiVe = game:HttpGet(SCRIPT_URL, true)
+        local scriptChay = loadstring(scriptTaiVe)
+        if scriptChay then
+            scriptChay()
+        else
+            error("Không thể biên dịch script từ URL")
+        end
+    end)
+
+    return thanhCong, ketQua
+end
+
+-- ============================================================
+-- PHẦN 4: KHỞI TẠO GIAO DIỆN VÀ XỬ LÝ SỰ KIỆN
+-- ============================================================
+
+local gui, textBox, nutXacNhan, thongBao = taoGuiNhapKey()
+
+nutXacNhan.MouseButton1Click:Connect(function()
+    local keyNhap = textBox.Text
+
+    if keyNhap == "" then
+        thongBao.Text = "Vui lòng nhập key!"
+        return
+    end
+
+    local hopLe, loi = kiemTraVaChay(keyNhap)
+
+    if not hopLe then
+        thongBao.Text = loi
+        thongBao.TextColor3 = Color3.fromRGB(255, 100, 100)
+        return
+    end
+
+    -- Key đúng -> ẩn GUI và chạy script
+    thongBao.Text = "Key hợp lệ! Đang tải AOTR..."
+    thongBao.TextColor3 = Color3.fromRGB(100, 255, 100)
+    gui:Destroy() -- Xóa GUI key system
+
+    -- Thực thi script AOTR
+    local thanhCong, loiThucThi = thucThiScriptAOTR()
+
+    if not thanhCong then
+        -- Nếu lỗi, hiển thị thông báo trong console
+        warn("[HIPVN] Lỗi khi chạy script AOTR: " .. tostring(loiThucThi))
+    else
+        print("[HIPVN] Script AOTR đã được tải và chạy thành công!")
+    end
+end)
+
+-- Cho phép nhấn Enter để xác nhận
+textBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        nutXacNhan.MouseButton1Click:Fire()
+    end
+end)
+
+-- ============================================================
+-- PHẦN 5: GENERATE KEY (CHẠY RIÊNG TRÊN MÁY TÍNH ĐỂ TẠO KEY)
+-- Đây là script Python hoặc Lua riêng để tạo key phân phối
+-- ============================================================
+
+--[[
+=== SCRIPT TẠO KEY (Python) ===
+import random, string
+
+TIEN_TO = "hipvn"
+def tao_key(do_dai_khoi=4, so_khoi=3):
+    bo_ky_tu = string.ascii_uppercase + string.digits
+    khoi = [TIEN_TO]
+    for _ in range(so_khoi):
+        khoi.append(''.join(random.choice(bo_ky_tu) for _ in range(do_dai_khoi)))
+    return '-'.join(khoi)
+
+# Tạo 5 key
+for i in range(5):
+    print(tao_key())
+--]]
+
+-- ============================================================
+-- PHẦN 6: THÔNG BÁO KHỞI ĐỘNG
+-- ============================================================
+print([[
+====================================
+  KEY SYSTEM HIPVN - AOTR LOADER
+  Yêu cầu nhập key để tiếp tục
+  Key bắt đầu bằng: ]] .. TIEN_TO_KEY .. [[
+====================================
+]])

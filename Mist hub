@@ -1,4 +1,8 @@
--- Script Roblox: Key System với tiền tố "hipvn", tự động loadstring AOTR khi key đúng
+Bypass By nhatanh Dev
+
+```lua
+-- Script Roblox: Key System với tiền tố "hipvn", tự động loadstring Mist Hub khi key đúng
+-- ĐÃ SỬA: Chỉ kiểm tra tiền tố "hipvn", bỏ kiểm tra độ dài
 -- Script này chạy trong môi trường Roblox Executor (Synapse X, Krnl, Script-Ware, v.v.)
 
 -- ============================================================
@@ -6,7 +10,7 @@
 -- ============================================================
 
 local TIEN_TO_KEY = "hipvn"
-local SCRIPT_URL = "https://raw.githubusercontent.com/xytuu/MistHub/refs/heads/main/aotr"
+local SCRIPT_URL = "https://raw.githubusercontent.com/hieply592-max/Hiep-HUD-V1/refs/heads/main/Mist%20hub"
 
 -- ============================================================
 -- PHẦN 2: TẠO GUI NHẬP KEY
@@ -15,15 +19,15 @@ local SCRIPT_URL = "https://raw.githubusercontent.com/xytuu/MistHub/refs/heads/m
 local function taoGuiNhapKey()
     -- Tạo ScreenGui
     local gui = Instance.new("ScreenGui")
-    gui.Name = "KeySystem_HIPVN"
+    gui.Name = "KeySystem_HIPVN_MistHub"
     gui.ResetOnSpawn = false
     gui.Parent = game:GetService("CoreGui") -- hoặc game.Players.LocalPlayer.PlayerGui
 
     -- Frame chính
     local frame = Instance.new("Frame")
     frame.Name = "MainFrame"
-    frame.Size = UDim2.new(0, 350, 0, 200)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -100)
+    frame.Size = UDim2.new(0, 350, 0, 220)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -110)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 0
     frame.Parent = gui
@@ -39,7 +43,7 @@ local function taoGuiNhapKey()
     tieuDe.Size = UDim2.new(1, 0, 0, 40)
     tieuDe.Position = UDim2.new(0, 0, 0, 10)
     tieuDe.BackgroundTransparency = 1
-    tieuDe.Text = "NHẬP KEY ĐỂ CHẠY AOTR"
+    tieuDe.Text = "NHẬP KEY ĐỂ CHẠY MIST HUB"
     tieuDe.TextColor3 = Color3.fromRGB(255, 255, 255)
     tieuDe.TextSize = 16
     tieuDe.Font = Enum.Font.SourceSansBold
@@ -94,7 +98,7 @@ local function taoGuiNhapKey()
     local thongBao = Instance.new("TextLabel")
     thongBao.Name = "Status"
     thongBao.Size = UDim2.new(1, -20, 0, 20)
-    thongBao.Position = UDim2.new(0, 10, 0, 175)
+    thongBao.Position = UDim2.new(0, 10, 0, 185)
     thongBao.BackgroundTransparency = 1
     thongBao.Text = ""
     thongBao.TextColor3 = Color3.fromRGB(255, 100, 100)
@@ -113,21 +117,16 @@ local function kiemTraVaChay(keyNhap)
     -- Chuẩn hóa key: bỏ khoảng trắng, viết hoa
     keyNhap = keyNhap:gsub("%s+", ""):upper()
 
-    -- Kiểm tra tiền tố
+    -- CHỈ kiểm tra tiền tố "hipvn", không kiểm tra độ dài
     if not keyNhap:find("^" .. TIEN_TO_KEY:upper()) then
-        return false, "Key phải bắt đầu bằng: " .. TIEN_TO_KEY
+        return false, "Key phai bat dau bang: " .. TIEN_TO_KEY
     end
 
-    -- Kiểm tra độ dài tối thiểu (tránh key quá ngắn)
-    if #keyNhap < #TIEN_TO_KEY + 8 then
-        return false, "Key quá ngắn, không hợp lệ!"
-    end
-
-    -- Key hợp lệ
+    -- Key hợp lệ - bỏ qua kiểm tra độ dài
     return true, nil
 end
 
-local function thucThiScriptAOTR()
+local function thucThiScriptMistHub()
     -- Sử dụng loadstring để tải và chạy script từ URL
     local thanhCong, ketQua = pcall(function()
         local scriptTaiVe = game:HttpGet(SCRIPT_URL, true)
@@ -152,7 +151,7 @@ nutXacNhan.MouseButton1Click:Connect(function()
     local keyNhap = textBox.Text
 
     if keyNhap == "" then
-        thongBao.Text = "Vui lòng nhập key!"
+        thongBao.Text = "Vui long nhap key!"
         return
     end
 
@@ -165,18 +164,21 @@ nutXacNhan.MouseButton1Click:Connect(function()
     end
 
     -- Key đúng -> ẩn GUI và chạy script
-    thongBao.Text = "Key hợp lệ! Đang tải AOTR..."
+    thongBao.Text = "Key hop le! Dang tai Mist Hub..."
     thongBao.TextColor3 = Color3.fromRGB(100, 255, 100)
+    
+    -- Delay 0.5 giây để hiển thị thông báo thành công trước khi xóa GUI
+    task.wait(0.5)
     gui:Destroy() -- Xóa GUI key system
 
-    -- Thực thi script AOTR
-    local thanhCong, loiThucThi = thucThiScriptAOTR()
+    -- Thực thi script Mist Hub
+    local thanhCong, loiThucThi = thucThiScriptMistHub()
 
     if not thanhCong then
         -- Nếu lỗi, hiển thị thông báo trong console
-        warn("[HIPVN] Lỗi khi chạy script AOTR: " .. tostring(loiThucThi))
+        warn("[HIPVN] Loi khi chay script Mist Hub: " .. tostring(loiThucThi))
     else
-        print("[HIPVN] Script AOTR đã được tải và chạy thành công!")
+        print("[HIPVN] Script Mist Hub da duoc tai va chay thanh cong!")
     end
 end)
 
@@ -214,8 +216,9 @@ for i in range(5):
 -- ============================================================
 print([[
 ====================================
-  KEY SYSTEM HIPVN - AOTR LOADER
-  Yêu cầu nhập key để tiếp tục
-  Key bắt đầu bằng: ]] .. TIEN_TO_KEY .. [[
+  KEY SYSTEM HIPVN - MIST HUB LOADER
+  Yeu cau nhap key de tiep tuc
+  Key bat dau bang: ]] .. TIEN_TO_KEY .. [[
 ====================================
 ]])
+```

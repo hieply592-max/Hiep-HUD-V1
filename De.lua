@@ -1,7 +1,7 @@
 -- ==========================================
 -- CẤU HÌNH THỜI GIAN VÀ KEY
 -- ==========================================
--- Mốc thời gian bắt đầu (Bạn có thể đổi lại nếu muốn)
+-- Mốc thời gian bắt đầu (Tính từ lúc bạn chạy script này lần đầu)
 local START_TIME = 1783658400 
 local DURATION = 10 * 3600    -- Thời hạn 10 tiếng (tính bằng giây)
 
@@ -11,8 +11,8 @@ local KEY_BACKUP = "99887766" -- Key dự phòng vô thời hạn
 
 local FILE_NAME = "MistHub_KeyAuth.txt"
 
--- URL Script chính của bạn (Có thêm mã ngẫu nhiên chống lỗi load 20%)
-local MAIN_SCRIPT_URL = "https://raw.githubusercontent.com/xytuu/MistHub/refs/heads/main/aotr?" .. math.random(1, 99999)
+-- URL Script mới của bạn (Có thêm mã ngẫu nhiên để tránh bị lỗi load 20% do cache)
+local MAIN_SCRIPT_URL = "https://raw.githubusercontent.com/hieply592-max/Hiep-HUD-V1/refs/heads/main/De.lua?" .. math.random(1, 99999)
 
 -- ==========================================
 -- HÀM KÍCH HOẠT SCRIPT CHÍNH & TỰ ĐỘNG LƯU KHI CHUYỂN SV
@@ -23,24 +23,21 @@ local function runMainScript()
         loadstring(game:HttpGet(MAIN_SCRIPT_URL, true))()
     end)
     
-    -- 2. Đăng ký tự động chạy lại chính đoạn script này khi chuyển Server (Teleport)
+    -- 2. Tự động kích hoạt lại chính nó khi người chơi chuyển Server (Teleport)
     local queue_teleport = queue_on_teleport or (syn and syn.queue_on_teleport)
     if queue_teleport then
-        -- Lấy toàn bộ nội dung của script hiện tại để nạp vào bộ nhớ Teleport
-        -- Điều này giúp khi sang sv mới, nó sẽ tự quét lại file key, nếu còn hạn nó tự bật luôn MistHub
         local currentScriptContent = [[
             local success, err = pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/xytuu/MistHub/refs/heads/main/aotr?" .. math.random(1, 99999), true))()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/hieply592-max/Hiep-HUD-V1/refs/heads/main/De.lua?" .. math.random(1, 99999), true))()
             end)
             
-            -- Đăng ký tiếp cho lần teleport sau nữa (Vòng lặp vô hạn khi đổi sv)
+            -- Tiếp tục xếp hàng cho các lần đổi server tiếp theo (Vòng lặp vô hạn)
             local q = queue_on_teleport or (syn and syn.queue_on_teleport)
             if q then 
-                q(string.format("loadstring(game:HttpGet('%s', true))()", "https://raw.githubusercontent.com/xytuu/MistHub/refs/heads/main/aotr")) 
+                q(string.format("loadstring(game:HttpGet('%s', true))()", "https://raw.githubusercontent.com/hieply592-max/Hiep-HUD-V1/refs/heads/main/De.lua")) 
             end
         ]]
         
-        -- Lắng nghe sự kiện khi người chơi chuyển server
         game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
             if State == Enum.TeleportState.Started or State == Enum.TeleportState.InProgress then
                 queue_teleport(currentScriptContent)
@@ -62,13 +59,13 @@ local function getCurrentKey()
 end
 
 -- ==========================================
--- KIỂM TRA LƯU TRỮ (AUTO LOG-IN)
+-- KIỂM TRA LƯU TRỮ (AUTO LOG-IN KHÔNG CẦN NHẬP LẠI)
 -- ==========================================
 if readfile and isfile and isfile(FILE_NAME) then
     local savedData = readfile(FILE_NAME)
     local currentKey = getCurrentKey()
     
-    -- Nếu đã nhập đúng Key dự phòng HOẶC Key thường vẫn còn trong hạn 10 tiếng -> Tự chạy luôn
+    -- Nếu đã nhập đúng Key dự phòng HOẶC Key thường vẫn còn trong hạn 10 tiếng -> Tự chạy thẳng luôn
     if savedData == KEY_BACKUP or (savedData == currentKey and (os.time() - START_TIME) < DURATION) then
         runMainScript()
         return
@@ -123,7 +120,7 @@ TextBox.FocusLost:Connect(function(enterPressed)
         local currentKey = getCurrentKey()
         
         if userInput == currentKey or userInput == KEY_BACKUP then
-            Title.Text = "KEY ĐÚNG! ĐANG LƯU TRẠNG THÁI..."
+            Title.Text = "KEY ĐÚNG! ĐANG TẢI SCRIPT..."
             Title.TextColor3 = Color3.fromRGB(0, 255, 127)
             
             if writefile then

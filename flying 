@@ -1,0 +1,20 @@
+local player= {
+      x = 100,
+      y = 400,
+      speed = 5,
+      flying = false
+}
+-- bật tắt chế độ bay
+function toggleFly()
+     player = not
+player.flying
+end
+-- cập nhật khung hình
+function update()
+     if player.flying then
+               --bay lên
+         if upPressed then
+             player.y = player.y - player.speed
+end
+      
+        

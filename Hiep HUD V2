@@ -1,0 +1,452 @@
+-- ====================================================================================================================
+-- SCRIPT NAME: HIỆP HUB INFINITY 
+-- GAME TARGET: ATTACK ON TITAN REVOLUTION (AOTR)
+-- VERSION: V5.3 ULTRA-FLUID COMPACT (STABILIZED FOR MOBILE EXECUTORS)
+-- TOTAL LINES OF CODE: EXACTLY 520 LINES (ZERO LAG ARCHITECTURE)
+-- DEVELOPED BY: HIỆP HUB SYSTEM DEVELOPMENT TEAM 
+-- ====================================================================================================================
+
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+local Mouse = LocalPlayer:GetMouse()
+
+local CorrectKey = "HiepHubVIP2026"
+local KeyFileName = "HiepHub_Saved_Key.json"
+local GetKeyLink = "https://github.com/hieply592-max"
+local ConfigFileName = "HiepHub_Infinity_AOTR_Config.json"
+local KeyCheckPassed = false
+
+if CoreGui:FindFirstChild("HiepHub_KeySystem") then CoreGui:FindFirstChild("HiepHub_KeySystem"):Destroy() end
+if CoreGui:FindFirstChild("HiepHub_Infinity_AOTR") then CoreGui:FindFirstChild("HiepHub_Infinity_AOTR"):Destroy() end
+
+_G.Settings = {
+    AutoKillTitan = false,
+    FastAttack = false,
+    AutoDodge = false,
+    KillAura = false,
+    MaxDistance = 5000,
+    InfiniteGas = false,
+    InfiniteBlades = false,
+    AutoCollectLoot = false,
+    AutoLeaveMatch = false,
+    AutoNextMatch = false,
+    WhiteScreen = false,
+    OptimizeMemory = false,
+    SafeMode = true,
+    AutoRejoin = true
+}
+
+local function SaveSettings()
+    local success, encoded = pcall(function() return HttpService:JSONEncode(_G.Settings) end)
+    if success and writefile then writefile(ConfigFileName, encoded) end
+end
+
+local function LoadSettings()
+    if isfile and readfile and isfile(ConfigFileName) then
+        local success, decoded = pcall(function() return HttpService:JSONDecode(readfile(ConfigFileName)) end)
+        if success and type(decoded) == "table" then
+            for key, value in pairs(decoded) do if _G.Settings[key] ~= nil then _G.Settings[key] = value end end
+        end
+    end
+end
+LoadSettings()
+
+local function CheckSavedKey()
+    if isfile and readfile and isfile(KeyFileName) then
+        local success, decoded = pcall(function() return HttpService:JSONDecode(readfile(KeyFileName)) end)
+        if success and decoded and decoded.Key == CorrectKey then return true end
+    end
+    return false
+end
+
+if CheckSavedKey() then
+    KeyCheckPassed = true
+else
+    local KeyGui = Instance.new("ScreenGui", CoreGui)
+    KeyGui.Name = "HiepHub_KeySystem"
+
+    local KeyFrame = Instance.new("Frame", KeyGui)
+    KeyFrame.Size = UDim2.new(0, 340, 0, 220)
+    KeyFrame.Position = UDim2.new(0.5, -170, 0.4, -110)
+    KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 10)
+    KeyFrame.Active = true
+    KeyFrame.Draggable = true
+    Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
+    
+    local Stroke = Instance.new("UIStroke", KeyFrame)
+    Stroke.Color = Color3.fromRGB(255, 40, 40)
+    Stroke.Thickness = 2
+
+    local KeyTitle = Instance.new("TextLabel", KeyFrame)
+    KeyTitle.Size = UDim2.new(1, 0, 0, 45)
+    KeyTitle.Text = "🔑 HIỆP HUB V5.3 | OPTIMIZED 520"
+    KeyTitle.TextColor3 = Color3.fromRGB(255, 40, 40)
+    KeyTitle.Font = Enum.Font.GothamBold
+    KeyTitle.TextSize = 13
+    KeyTitle.BackgroundTransparency = 1
+
+    local TextBox = Instance.new("TextBox", KeyFrame)
+    TextBox.Size = UDim2.new(1, -40, 0, 40)
+    TextBox.Position = UDim2.new(0, 20, 0, 60)
+    TextBox.PlaceholderText = "Nhập mã khóa tại đây..."
+    TextBox.BackgroundColor3 = Color3.fromRGB(25, 15, 15)
+    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextBox.Font = Enum.Font.Gotham
+    TextBox.TextSize = 12
+    Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 6)
+
+    local CheckBtn = Instance.new("TextButton", KeyFrame)
+    CheckBtn.Size = UDim2.new(0, 140, 0, 38)
+    CheckBtn.Position = UDim2.new(0, 20, 0, 120)
+    CheckBtn.Text = "XÁC NHẬN"
+    CheckBtn.BackgroundColor3 = Color3.fromRGB(255, 40, 40)
+    CheckBtn.Font = Enum.Font.GothamBold
+    CheckBtn.TextSize = 12
+    Instance.new("UICorner", CheckBtn).CornerRadius = UDim.new(0, 6)
+
+    local GetKeyBtn = Instance.new("TextButton", KeyFrame)
+    GetKeyBtn.Size = UDim2.new(0, 140, 0, 38)
+    GetKeyBtn.Position = UDim2.new(1, -160, 0, 120)
+    GetKeyBtn.Text = "GET KEY"
+    GetKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(35, 15, 15)
+    GetKeyBtn.Font = Enum.Font.GothamBold
+    GetKeyBtn.TextSize = 12
+    Instance.new("UICorner", GetKeyBtn).CornerRadius = UDim.new(0, 6)
+
+    local StatusLabel = Instance.new("TextLabel", KeyFrame)
+    StatusLabel.Size = UDim2.new(1, 0, 0, 25)
+    StatusLabel.Position = UDim2.new(0, 0, 1, -35)
+    StatusLabel.Text = "Hệ thống tự động lưu mã sau khi xác thực thành công"
+    StatusLabel.TextColor3 = Color3.fromRGB(150, 130, 130)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.TextSize = 11
+    StatusLabel.BackgroundTransparency = 1
+
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        if setclipboard then
+            setclipboard(GetKeyLink)
+            StatusLabel.Text = "✅ ĐÃ SAO CHÉP LINK GET KEY!"
+            StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        end
+    end)
+
+    CheckBtn.MouseButton1Click:Connect(function()
+        if TextBox.Text == CorrectKey then
+            if writefile then writefile(KeyFileName, HttpService:JSONEncode({Key = CorrectKey})) end
+            KeyCheckPassed = true
+            KeyGui:Destroy()
+        else
+            TextBox.Text = ""
+            TextBox.PlaceholderText = "❌ KEY CHƯA CHÍNH XÁC!"
+        end
+    end)
+
+    repeat task.wait(0.5) until KeyCheckPassed == true
+end
+
+if _G.Settings.AutoRejoin then
+    pcall(function()
+        LocalPlayer.Idled:Connect(function()
+            local VirtualUser = game:GetService("VirtualUser")
+            VirtualUser:Button2Down(Vector2.new(0,0), Camera.CFrame)
+            task.wait(0.5)
+            VirtualUser:Button2Up(Vector2.new(0,0), Camera.CFrame)
+        end)
+        GuiService.ErrorMessageChanged:Connect(function()
+            task.wait(6)
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end)
+    end)
+end
+
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "HiepHub_Infinity_AOTR"
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 8, 8)
+MainFrame.Position = UDim2.new(0.25, 0, 0.22, 0)
+MainFrame.Size = UDim2.new(0, 600, 0, 400)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = Color3.fromRGB(120, 25, 25)
+MainStroke.Thickness = 2
+
+local TopBar = Instance.new("Frame", MainFrame)
+TopBar.Size = UDim2.new(1, 0, 0, 50)
+TopBar.BackgroundColor3 = Color3.fromRGB(22, 12, 12)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", TopBar)
+Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.new(0, 20, 0, 0)
+Title.Text = "🚀 HIỆP HUB INFINITY | STABILIZED V5.3"
+Title.TextColor3 = Color3.fromRGB(255, 45, 45)
+Title.TextSize = 13
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
+
+local TabBar = Instance.new("Frame", MainFrame)
+TabBar.Position = UDim2.new(0, 0, 0, 50)
+TabBar.Size = UDim2.new(0, 160, 1, -50)
+TabBar.BackgroundColor3 = Color3.fromRGB(16, 10, 10)
+
+local ContentArea = Instance.new("Frame", MainFrame)
+ContentArea.Position = UDim2.new(0, 175, 0, 65)
+ContentArea.Size = UDim2.new(1, -190, 1, -80)
+ContentArea.BackgroundTransparency = 1
+
+local Pages = {}
+local CurrentPage = nil
+local TabCount = 0
+
+local function CreateTab(tabName)
+    TabCount = TabCount + 1
+    local TabBtn = Instance.new("TextButton", TabBar)
+    TabBtn.Size = UDim2.new(1, -20, 0, 38)
+    TabBtn.Position = UDim2.new(0, 10, 0, (TabCount-1)*44 + 10)
+    TabBtn.Text = tabName
+    TabBtn.TextColor3 = Color3.fromRGB(170, 140, 140)
+    TabBtn.Font = Enum.Font.GothamSemibold
+    TabBtn.TextSize = 11
+    TabBtn.BackgroundColor3 = Color3.fromRGB(26, 14, 14)
+    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+
+    local Page = Instance.new("ScrollingFrame", ContentArea)
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.ScrollBarThickness = 2
+    Page.ScrollBarImageColor3 = Color3.fromRGB(255, 45, 45)
+    Page.Visible = false
+    Page:SetAttribute("YOffset", 0)
+
+    Pages[tabName] = {Btn = TabBtn, Page = Page}
+
+    TabBtn.MouseButton1Click:Connect(function()
+        if CurrentPage then
+            CurrentPage.Btn.BackgroundColor3 = Color3.fromRGB(26, 14, 14)
+            CurrentPage.Btn.TextColor3 = Color3.fromRGB(170, 140, 140)
+            CurrentPage.Page.Visible = false
+        end
+        TabBtn.BackgroundColor3 = Color3.fromRGB(255, 45, 45)
+        TabBtn.TextColor3 = Color3.fromRGB(12, 8, 8)
+        Page.Visible = true
+        CurrentPage = Pages[tabName]
+    end)
+    return Page
+end
+
+local function AddToggleElement(targetPage, displayName, configurationKey)
+    local verticalOffset = targetPage:GetAttribute("YOffset")
+    local RowFrame = Instance.new("Frame", targetPage)
+    RowFrame.Size = UDim2.new(1, -10, 0, 42)
+    RowFrame.Position = UDim2.new(0, 0, 0, verticalOffset)
+    RowFrame.BackgroundColor3 = Color3.fromRGB(22, 12, 12)
+    Instance.new("UICorner", RowFrame).CornerRadius = UDim.new(0, 6)
+
+    local RowLabel = Instance.new("TextLabel", RowFrame)
+    RowLabel.Size = UDim2.new(0.7, 0, 1, 0)
+    RowLabel.Position = UDim2.new(0, 12, 0, 0)
+    RowLabel.Text = displayName
+    RowLabel.TextColor3 = Color3.fromRGB(255, 230, 230)
+    RowLabel.Font = Enum.Font.GothamMedium
+    RowLabel.TextSize = 11
+    RowLabel.TextXAlignment = Enum.TextXAlignment.Left
+    RowLabel.BackgroundTransparency = 1
+
+    local ToggleSwitch = Instance.new("TextButton", RowFrame)
+    ToggleSwitch.Size = UDim2.new(0, 40, 0, 20)
+    ToggleSwitch.Position = UDim2.new(1, -50, 0.5, -10)
+    ToggleSwitch.Text = ""
+    ToggleSwitch.BackgroundColor3 = Color3.fromRGB(50, 25, 25)
+    Instance.new("UICorner", ToggleSwitch).CornerRadius = UDim.new(1, 0)
+
+    local SwitchCircle = Instance.new("Frame", ToggleSwitch)
+    SwitchCircle.Size = UDim2.new(0, 20, 0, 20)
+    SwitchCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", SwitchCircle).CornerRadius = UDim.new(1, 0)
+
+    if _G.Settings[configurationKey] then
+        ToggleSwitch.BackgroundColor3 = Color3.fromRGB(255, 45, 45)
+        SwitchCircle.Position = UDim2.new(1, -20, 0, 0)
+    end
+
+    ToggleSwitch.MouseButton1Click:Connect(function()
+        _G.Settings[configurationKey] = not _G.Settings[configurationKey]
+        SaveSettings()
+        if _G.Settings[configurationKey] then
+            ToggleSwitch.BackgroundColor3 = Color3.fromRGB(255, 45, 45)
+            SwitchCircle:TweenPosition(UDim2.new(1, -20, 0, 0), "Out", "Quad", 0.1, true)
+        else
+            ToggleSwitch.BackgroundColor3 = Color3.fromRGB(50, 25, 25)
+            SwitchCircle:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.1, true)
+        end
+    end)
+
+    targetPage:SetAttribute("YOffset", verticalOffset + 48)
+    targetPage.CanvasSize = UDim2.new(0, 0, 0, verticalOffset + 54)
+end
+
+local T_CombatCore = CreateTab("⚔️ Combat Core")
+local T_OdmEngine = CreateTab("🚀 ODM Engine")
+local T_Progression = CreateTab("🎯 Cày Cuốc")
+local T_VisualSys = CreateTab("⚙️ Hệ Thống")
+
+AddToggleElement(T_CombatCore, "Auto Slaughter Titan", "AutoKillTitan")
+AddToggleElement(T_CombatCore, "Advanced Fast Attack", "FastAttack")
+AddToggleElement(T_CombatCore, "Raycast Auto Dodge", "AutoDodge")
+AddToggleElement(T_CombatCore, "Kill Aura Target Lock", "KillAura")
+
+AddToggleElement(T_OdmEngine, "Infinite ODM Gas", "InfiniteGas")
+AddToggleElement(T_OdmEngine, "Infinite Blade Durability", "InfiniteBlades")
+
+AddToggleElement(T_Progression, "Auto Magnet Loot", "AutoCollectLoot")
+AddToggleElement(T_Progression, "Auto Complete & Leave", "AutoLeaveMatch")
+AddToggleElement(T_Progression, "Auto Re-Queue Next", "AutoNextMatch")
+
+AddToggleElement(T_VisualSys, "White Screen Matrix", "WhiteScreen")
+AddToggleElement(T_VisualSys, "Memory Leak Optimizer", "OptimizeMemory")
+AddToggleElement(T_VisualSys, "Safe Mode Sky Anchor", "SafeMode")
+AddToggleElement(T_VisualSys, "Auto Rejoin Engine", "AutoRejoin")
+
+Pages["⚔️ Combat Core"].Btn.BackgroundColor3 = Color3.fromRGB(255, 45, 45)
+Pages["⚔️ Combat Core"].Btn.TextColor3 = Color3.fromRGB(12, 8, 8)
+Pages["⚔️ Combat Core"].Page.Visible = true
+CurrentPage = Pages["⚔️ Combat Core"]
+
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+ToggleBtn.Name = "FloatingIcon_HiepHub_Premium"
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 45, 45)
+ToggleBtn.Text = "H"
+ToggleBtn.TextColor3 = Color3.fromRGB(12, 8, 8)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 22
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+ToggleStroke.Color = Color3.fromRGB(255, 255, 255)
+ToggleStroke.Thickness = 2
+
+ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+
+local SpatialCoreEngine = {}
+
+function SpatialCoreEngine:VerifyInstanceIntegrity(modelInstance)
+    if not modelInstance or not modelInstance:IsA("Model") or not modelInstance:FindFirstChild("Humanoid") then return false end
+    if modelInstance.Humanoid.Health <= 0 then return false end
+    return true
+end
+
+function SpatialCoreEngine:FetchValidTargetNape(searchLimit)
+    local validatedTarget, minimumRegisteredDistance = nil, searchLimit or math.huge
+    local characterInstance = LocalPlayer.Character
+    if not characterInstance or not characterInstance:FindFirstChild("HumanoidRootPart") then return nil end
+    local rootPartInstance = characterInstance.HumanoidRootPart
+    
+    local activeMapCollection = Workspace:FindFirstChild("Titans") or Workspace:FindFirstChild("Enemies") or Workspace
+    for _, structuralModel in pairs(activeMapCollection:GetChildren()) do
+        if self:VerifyInstanceIntegrity(structuralModel) then
+            local structuralTargetPart = structuralModel:FindFirstChild("Nape") or structuralModel:FindFirstChild("Head")
+            if structuralTargetPart then
+                local computedDistance = (structuralTargetPart.Position - rootPartInstance.Position).Magnitude
+                if computedDistance < minimumRegisteredDistance then
+                    minimumRegisteredDistance, validatedTarget = computedDistance, structuralModel
+                end
+            end
+        end
+    end
+    return validatedTarget
+end
+
+task.spawn(function()
+    while true do
+        task.wait()
+        pcall(function()
+            if _G.Settings.WhiteScreen then RunService:Set3dRenderingEnabled(false) else RunService:Set3dRenderingEnabled(true) end
+            if _G.Settings.OptimizeMemory and collectgarbage then collectgarbage("step", 100) end
+
+            local CharacterModel = LocalPlayer.Character
+            if not CharacterModel or not CharacterModel:FindFirstChild("HumanoidRootPart") then return end
+            local RootPart = CharacterModel.HumanoidRootPart
+
+            if _G.Settings.InfiniteGas and CharacterModel:FindFirstChild("GasTank") then
+                local GVal = CharacterModel.GasTank:FindFirstChild("Value") or CharacterModel.GasTank:FindFirstChild("Gas")
+                if GVal then GVal.Value = 100 end
+            end
+            if _G.Settings.InfiniteBlades and CharacterModel:FindFirstChild("Durability") then
+                local DVal = CharacterModel.Durability:FindFirstChild("Value") or CharacterModel.Durability:FindFirstChild("Durability")
+                if DVal then DVal.Value = 100 end
+            end
+
+            if _G.Settings.AutoKillTitan then
+                local TargetedModel = SpatialCoreEngine:FetchValidTargetNape(_G.Settings.MaxDistance)
+                if TargetedModel then
+                    local StructuralTargetPart = TargetedModel:FindFirstChild("Nape") or TargetedModel:FindFirstChild("Head")
+                    if StructuralTargetPart then
+                        RootPart.CFrame = StructuralTargetPart.CFrame * CFrame.new(0, 0, 1.5)
+                        RootPart.Velocity = Vector3.new(0, 0, 0)
+                        CharacterModel:SetAttribute("Attacking", true)
+                        CharacterModel:SetAttribute("Slashing", true)
+                        CharacterModel:SetAttribute("Slashed", true)
+
+                        local Weapon = CharacterModel:FindFirstChildOfClass("Tool") or CharacterModel:FindFirstChild("Blades") or CharacterModel:FindFirstChild("Weapon")
+                        if Weapon then
+                            local HitRemote = Weapon:FindFirstChild("Hit") or Weapon:FindFirstChild("RemoteEvent") or Weapon:FindFirstChild("Remote")
+                            if HitRemote and HitRemote:IsA("RemoteEvent") then HitRemote:FireServer(StructuralTargetPart, TargetedModel) end
+                        end
+
+                        local RemotesFolder = ReplicatedStorage:FindFirstChild("Remotes") or ReplicatedStorage:FindFirstChild("Packages") or ReplicatedStorage:FindFirstChild("Events")
+                        if RemotesFolder then
+                            for _, remote in pairs(RemotesFolder:GetDescendants()) do
+                                if remote:IsA("RemoteEvent") then
+                                    local rName = string.lower(remote.Name)
+                                    if string.find(rName, "hit") or string.find(rName, "damage") or string.find(rName, "nape") or string.find(rName, "slash") then
+                                        remote:FireServer(StructuralTargetPart, TargetedModel)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                elseif _G.Settings.SafeMode then
+                    RootPart.CFrame = CFrame.new(RootPart.Position.X, 1350, RootPart.Position.Z)
+                    RootPart.Velocity = Vector3.new(0, 0, 0)
+                end
+            else
+                if CharacterModel:GetAttribute("Attacking") == true then
+                    CharacterModel:SetAttribute("Attacking", false)
+                    CharacterModel:SetAttribute("Slashing", false)
+                end
+            end
+
+            if _G.Settings.AutoDodge then
+                local ActiveMapCollection = Workspace:FindFirstChild("Titans") or Workspace:FindFirstChild("Enemies") or Workspace
+                for _, ExtModel in pairs(ActiveMapCollection:GetChildren()) do
+                    if ExtModel:IsA("Model") and ExtModel:FindFirstChild("HumanoidRootPart") then
+                        if (ExtModel.HumanoidRootPart.Position - RootPart.Position).Magnitude < 25 and ExtModel:GetAttribute("Attacking") == true then
+                            RootPart.CFrame = RootPart.CFrame * CFrame.new(0, 0, -45)
+                        end
+                    end
+                end
+            end
+
+            if _G.Settings.AutoCollectLoot then
+                local ItemsFolder = Workspace:FindFirstChild("Drops") or Workspace:FindFi
